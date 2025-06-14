@@ -1,0 +1,24 @@
+sources:
+  generate_syslog: # A special source that generates syslog messages.
+    type: "demo_logs"
+    format: "syslog"
+    count: 3
+
+transforms:
+  remap_syslog:
+    inputs:
+      - "generate_syslog"
+    type: "remap"
+    source: |
+            # Parses the plain syslog message into structured data
+            structured = parse_syslog!(.message)
+            # . means the entire event or log
+            # . is merged with structure data
+            . = merge(., structured)
+sinks:
+  emit_syslog:
+    inputs:
+      - "remap_syslog"
+    type: "console"
+    encoding:
+      codec: json

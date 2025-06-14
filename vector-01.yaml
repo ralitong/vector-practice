@@ -1,0 +1,13 @@
+# Sources collect or receive data from observability resources.
+sources:
+  in:
+    type: "stdin"
+
+# Sinks send data onwards from Vector to external services or destinations.
+sinks:
+  out:
+    inputs: # This sink will receive data from the "in" source. See sources above.
+      - "in"
+    type: "console" # This sink outputs data to the console.
+    encoding:
+      codec: "text" # Print data as plaintext. No parsing or formatting.
