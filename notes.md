@@ -12,3 +12,5 @@
 - Created a file `vector-09.yaml` to generate template configurations
 - Created a file `vector-10.yaml` to try out unit tests for vector configurations
 - Created a file `vector-11.yaml` to demonstrate separating config files and reading them from a directory
+- created a file `vector-12.toml` and `vector-13.toml` to demonstrate how enriching logs with external CSVs
+- created a file `vector-14.yaml` and `vector-15.yaml` to demonstrate how debugging with `vector tap`

@@ -1,0 +1,10 @@
+status_code,status_message
+1,"device status online"
+2,"device status offline"
+3,"device status connection error"
+4,"device status maintenance mode"
+5,"device status firmware update"
+6,"device status rebooting"
+7,"device status transmitting"
+8,"device status transmission complete"
+9,"device status not responding"

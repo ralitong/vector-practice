@@ -36,9 +36,23 @@ separate
 # (7) running vector with custom semantics
 vector --config ./vector-08.yaml
 # (8) save time by letting vector generate configs
-vector generate /remap,filter,reduce > vector-09.toml
+vector generate /remap,filter,reduce --format toml > vector-09.toml
 separate
 # (9) testing configs
 vector test ./vector-10.toml
 separate
-# (10) 
+# (10) Debug logging with vector
+VECTOR_LOG=debug vector --config ./vector-08.yaml
+separate
+# (11) Testing enriching logs with external csv files
+vector test ./vector-12.toml 
+separate
+# (12) Testing vector tap for debugging
+# Unfortunately, we have to comment this out because we have -w enabled
+# -w means to watch config changes
+# vector --config ./vector-14.toml -w
+# vector tap
+# vector tap --inputs-of "out" # this monitors/"taps" into inputs the "out" sink
+# vector tap --quiet --format logfmt # this changes the output of tap to logfmt
+# (13) Another example of testing vector tap
+# vector --config ./vector-15.toml -w

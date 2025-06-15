@@ -1,0 +1,42 @@
+[enrichment_tables.iot_status]
+type = "file"
+
+[enrichment_tables.iot_status.file]
+path = "iot.csv"
+encoding = { type = "csv" }
+
+[enrichment_tables.iot_status.schema]
+status_code = "integer"
+status_message = "string"
+
+[transforms.enrich_iot_status]
+type = "remap"
+inputs = ["datadog_agents"]
+source = '''
+. = parse_json!(.status_message)
+
+status_code = del(.status_code)
+
+# In the case that now row with a maching value is found, the original value of
+# the status code is assigned
+row = get_enrichment_table_record("iot_status", {"status_code" : status_code}) ?? status_code
+
+.status = row.status_message
+'''
+
+[[tests]]
+    name = "checking_enrichment_with_csv"
+
+    [[tests.inputs]]
+        insert_at = "enrich_iot_status"
+        type = "log"
+        log_fields.status_message = "{\"status_code\": 1}"
+    
+    [[tests.outputs]]
+        extract_from = "enrich_iot_status"
+        [[tests.outputs.conditions]]
+            type = "vrl"
+            source = """
+                assert_eq!(.status, "device status online")
+            """
+

@@ -1,0 +1,38 @@
+[api]
+enabled = true
+
+[sources.in]
+type = "demo_logs"
+format = "shuffle"
+lines = [
+  '{ "type": "icecream", "flavor": "strawberry" }',
+  '{ "type": "icecream", "flavor": "chocolate" }',
+  '{ "type": "icecream", "flavor": "wasabi" }',
+]
+
+[transforms.picky]
+type = "remap"
+inputs = ["in"]
+drop_on_abort = true
+reroute_dropped = true
+source = '''
+    . = parse_json!(.message)
+
+    if .flavor == "strawberry" {
+        .happines = 10
+    } else if .flavor == "chocolate" {
+        .happiness = 5
+    } else {
+        abort
+    }
+'''
+
+[sinks.store]
+type = "console"
+inputs = ["picky"]
+target = "stdout"
+encoding.codec = "json"
+
+[sinks.trash]
+type = "blackhole"
+inputs = ["picky.dropped"]

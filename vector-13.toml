@@ -1,0 +1,49 @@
+[enrichment_tables.severity]
+type = "file"
+
+[enrichment_tables.severity.file]
+path = "severity.csv"
+encoding = { type = "csv" }
+
+[enrichment_tables.severity.schema]
+ip = "string"
+alert_type = "string"
+severity = "string"
+
+[transforms.ip_alert]
+type = "remap"
+inputs = ["datadog_agent"]
+source = '''
+. = parse_json!(.message)
+
+ip = del(.ip)
+
+row = get_enrichment_table_record("severity", {"ip" : ip}) ?? ip
+
+.alert.type = row.alert_type
+.alert.severity = row.severity
+'''
+
+
+[[tests]]
+    name = "checking_enrichment_with_csv"
+
+    [[tests.inputs]]
+        insert_at = "ip_alert"
+        type = "log"
+        log_fields.message = '''
+        {
+            "ip":"192.0.2.0",
+            "host":"my.host.com",
+            "timestamp":"2019-11-01T21:15:47+00:00"
+        }
+        '''
+    
+    [[tests.outputs]]
+        extract_from = "ip_alert"
+        [[tests.outputs.conditions]]
+            type = "vrl"
+            source = """
+                assert_eq!(.alert.type, "alert")
+                assert_eq!(.alert.severity, "high")
+            """
