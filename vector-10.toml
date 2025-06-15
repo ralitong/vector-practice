@@ -1,0 +1,32 @@
+[sources.over_tcp]
+    type = "socket"
+    mode = "tcp"
+    address = "0.0.0.0:9000"
+
+[transforms.foo]
+    inputs = ["over_tcp"]
+    type = "remap"
+    source = '''
+        .= parse_grok!(.message, s'%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}')
+    '''
+
+[[tests]]
+    name = "check_simple_log"
+
+    [[tests.inputs]]
+        insert_at = "foo"
+        type = "raw"
+        value = "2019-11-28T12:00:00+00:00 info Sorry, I'm busy this week Cecil"
+    
+    [[tests.outputs]]
+        extract_from = "foo"
+        [[tests.outputs.conditions]]
+            type = "vrl"
+            source = """
+                assert_eq!(.message, "Sorry, I'm busy this week Cecil")
+            """
+
+    # And we add a new output without conditions for inspecting
+    # a new transform
+    [[tests.outputs]]
+        extract_from = "foo"

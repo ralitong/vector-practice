@@ -1,0 +1,26 @@
+###########################################################
+# Not meant to be used directly, more a learning example.
+###########################################################
+
+# This toml demonstrates how to separate config files
+
+# /etc/vector/sources/syslog.toml
+type = "syslog"
+address = "0.0.0.0:514"
+max_length = 42000
+mode = "tcp"
+
+# /etc/vector/transforms/change_fields.toml
+type = "remap"
+inputs = ["syslog"]
+source = """
+.new_field = "some value"
+"""
+
+# /etc/vector/sinks/stdout.toml
+type = "console"
+inputs = ["change_fields"]
+target = "stdout"
+
+# vector can tie all those configs above using:
+# vector --config-dir /etc/vector
