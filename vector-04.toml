@@ -1,0 +1,86 @@
+###########################################################
+# Not meant to be used directly, more a learning example.
+###########################################################
+
+# EXAMPLE 1
+# Telling vector where to find host, message, and timestamp keys in logs.
+[log_schema]
+host_key = "instance" # default "host"
+message_key = "info" # default "message"
+timestamp_key = "datetime" # default "timestamp"
+
+# Sources, transforms, and sinks
+
+# EXAMPLE 2
+# Telling vector specifically to use @timestamp as the timestamp key.
+[log_schema]
+    timestamp_key = "@timestamp" # Applies to all sources, sinks, and transforms!
+
+[sources.my_naming_confused_source]
+    type = "logplex"
+    address: = "0.0.0.0:8088"
+
+# EXAMPLE 3
+# Telling vector to delete personal details like email and passport number
+[transform.strip_personal_details]
+type = "remap"
+inputs = ["my-source-id"]
+source = '''
+    del(.email, .passport_number)
+'''
+
+# EXAMPLE 4
+# Instead of filtering, retain only the fields you are interested in
+# This should remove undesired fields such as personal details
+[transforms.strip_personal_details]
+type = "remap"
+inputs = ["my-source-id"]
+source = '''
+    only_fields(.timestamp, .message, .host, .user_id)
+'''
+# EXAMPLE 5
+# This example is a sink that sends logs/events to a Kafka topic
+# For example you have the following log:
+# {"service": "web", "message": "User logged in", "timestamp": "2023-10-01T12:00:00Z"}
+# {"service": "backend", "message": "Database query executed", "timestamp": "2023-10-01T12:00:01Z"}
+# The sink will send these logs to the Kafka topics "web" and "backend" respectively. (see topic = "{{service}}")
+# encoding.except_fields is used to remove the "service" field from the output, saving some bytes.
+# A bit of caution, not all fields are templatable
+# topic = "{{your-custom_field}}" may not work as expected.
+[sinks.output]
+    inputs = ["demo_logs"]
+    type = "kafka"
+
+    # Put events in the host specific topic
+    topic = "{{service}}"
+    encoding.except_fields = ["service"] # Remove this field now and save some bytes
+
+
+# EXAMPLE 6
+# This example merge two fields in an event .first_name and .last_name
+# and combine it into a new field .name
+# After combining, the fields .first_name and .last_name are deleted
+[transforms.moosh_names]
+    type = "remap"
+    inputs = ["source0"] # Pretend its a real source
+    source = '''
+        .name = .first_name + " " + .last_name
+        .del(.first_name, .last_name)
+    '''
+
+# EXAMPLE 7
+# This example converts a timestamp to the YYYY/MM/DD:HH:MM:SS z format
+# A timestamp format preferred in the US/Canada
+[transforms.format_timestamp]
+    type = "remap"
+    source = '''
+        .timestamp = timestamp(.timestamp, "%Y/%m/%d:%H:%M:%S %z")
+    '''
+
+# EXAMPLE 8
+# This example just tells vector to print the log event as JSON
+[sinks.print]
+    type = "console"
+    inputs = ["source0"] # Pretend its a real source
+    target = "stdout"
+    encoding.codec = "json"

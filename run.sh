@@ -11,10 +11,18 @@ function seperate () {
   echo "-----------------------------------------------------------"
 }
 
-# Running vector with simple stdin and stdout
+# (1) Running vector with simple stdin and stdout
 echo "Hello world!" | vector --config ./vector-01.yaml
-
 seperate
-
-# Running vector with syslog
+# (2) running vector with syslog
 vector --config ./vector-02.yaml
+seperate
+# (3) running vector with syslog but with more complex remapping
+vector --config ./vector-03.yaml
+seperate
+# (4) running vector to conform with GPDR laws
+cat <<-EOF | vector --config ./vector-05.toml
+  { "id": "user1", "gdpr": false, "email": "us-user1@datadoghq.com" }
+  { "id": "user2", "gdpr": false, "email": "us-user2@datadoghq.com" }
+  { "id": "user3", "gdpr": true, "email": "eu-user3@datadoghq.com" }
+EOF

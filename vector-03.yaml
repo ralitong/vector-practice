@@ -1,0 +1,47 @@
+sources:
+  logs:
+    type: demo_logs
+    format: syslog
+    count: 3
+
+transforms:
+  modify:
+    type: remap
+    inputs:
+      - logs
+    source: |
+      # Parse Syslog input. The "!" means that the script should abort an error.
+      . = parse_syslog!(.message)
+
+      # Convert the timestamp to a Unix timestamp, aborting on error
+      .timestamp = to_unix_timestamp!(.timestamp)
+
+      # Remove the "facility" and "procid" fields
+      del(.facility)
+      del(.procid)
+
+      # Replace the "msgid" field with a unique ID
+      .msgid = uuid_v4()
+
+      # If the log message contains the phrase "Great Scott!", set the new field
+      # "critical" to true, otherwise set it to false. If the "contains" function
+      # errors, log the error (instead of aborting the script, as above).
+
+      # Inside the "if" block, a variable "is_critical" is created to hold the
+      # result of the "contains" function. The "if" block then uses the
+      # value of is_critical to whether or not to log a message.
+      #  (variable assignment)                              (variable usage)
+      if (is_critical = contains(.message, "Great Scott!"); is_critical) {
+        log("It contains 'Great Scott!'", level: "info")
+      }
+
+      # The "." is the entire event or log, or the "root" of the event.
+      .critical = is_critical
+
+sinks:
+  out:
+    type: console
+    inputs:
+      - modify
+    encoding:
+      codec: json
