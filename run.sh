@@ -26,3 +26,12 @@ cat <<-EOF | vector --config ./vector-05.toml
   { "id": "user2", "gdpr": false, "email": "us-user2@datadoghq.com" }
   { "id": "user3", "gdpr": true, "email": "eu-user3@datadoghq.com" }
 EOF
+seperate
+# (5) running vector to test log namespaces
+vector --config ./vector-06.yaml
+seperate
+# (6) running vector to test log namespaces but with log namespaces disabled
+vector --config ./vector-07.yaml
+seperate
+# (7) running vector with custom semantics
+vector --config ./vector-08.yaml

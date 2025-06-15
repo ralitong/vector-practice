@@ -1,0 +1,28 @@
+schema:
+  log_namespace: true
+
+sources:
+  s0:
+    type: demo_logs
+    format: shuffle
+    lines:
+      - Hello World!
+    count: 1
+  
+
+sinks:
+  text_console:
+    type: console
+    inputs:
+      - s0
+    encoding:
+      codec: text
+
+  json_console:
+    type: console
+    inputs:
+    - s0
+    encoding:
+      codec: json
+      json:
+        pretty: true

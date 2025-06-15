@@ -1,0 +1,47 @@
+schema:
+  log_namespace: true
+
+sources:
+  s0:
+    type: demo_logs
+    format: shuffle
+    lines:
+      - Hello World!
+    count: 1
+
+transforms:
+  t0:
+    type: remap
+    inputs:
+      - s0
+    source: |
+      # .custom_field gets treated the same .message
+      set_semantic_meaning(.custom_field, "message")
+      # This becomes the new payload. The `.` is overwritten.
+      .custom_field = "foo"
+  
+  t1:
+    type: remap
+    inputs:
+      - s0
+    source: |
+      # The value of `.` is `Hello World!` at this point, however the following line overwrites it.
+      . = "bar"
+
+
+sinks:
+  text_console:
+    type: console
+    inputs:
+      - t0
+    encoding:
+      codec: text
+  
+  json_console:
+    type: console
+    inputs:
+      - t1
+    encoding:
+      codec: json
+      json:
+        pretty: true

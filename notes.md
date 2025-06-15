@@ -7,3 +7,5 @@
 - Created a file `vector-03.yaml` that takes input from syslog with a bit more complex parsing and adding new fields
 - Created a file `vector-04.yaml` that contains transformations and filtering example
 - Created a file `vector-05.yaml` that contains an example how to transform logs to be GPDR compliant
+- Created a file `vector-06.yaml` and `vector-07.yaml` that test log namespaces (still in beta mode)
+- Created a file `vector-08.yaml` that sets custom semantics for log events

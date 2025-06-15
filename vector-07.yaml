@@ -1,0 +1,39 @@
+schema:
+  log_namespace: false
+
+sources:
+  s0:
+    type: demo_logs
+    format: shuffle
+    lines:
+      - Hello World!
+    count: 1
+  
+
+sinks:
+  text_console:
+    type: console
+    inputs:
+      - s0
+    encoding:
+      codec: text
+
+  # When setting the log_namespaces: false
+  # Vector wraps the output from source s0 as a json object
+  # because "Hello World!" is not a json object
+  # The output would look something like this
+  #   {
+  #   "host": "localhost",
+  #   "message": "Hello World!",
+  #   "service": "vector",
+  #   "source_type": "demo_logs",
+  #   "timestamp": "2025-06-15T09:34:39.090837194Z"
+  # }
+  json_console:
+    type: console
+    inputs:
+    - s0
+    encoding:
+      codec: json
+      json:
+        pretty: true
